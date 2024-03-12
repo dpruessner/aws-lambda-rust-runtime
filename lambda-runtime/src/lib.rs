@@ -31,6 +31,9 @@ mod requests;
 /// Utilities for Lambda Streaming functions.
 pub mod streaming;
 
+/// Experimental layering 
+pub mod experimental;
+
 /// Utilities to initialize and use `tracing` and `tracing-subscriber` in Lambda Functions.
 #[cfg(feature = "tracing")]
 pub use lambda_runtime_api_client::tracing;
@@ -90,7 +93,11 @@ where
     service_fn(move |req: LambdaEvent<A>| f(req.payload, req.context))
 }
 
-struct Runtime {
+/// Runtime that orchestrates service that polls for events on the [Lambda
+/// Runtime APIs](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-api.html), 
+/// and delivers into the Tower Layers that eventually are handled by a
+/// *handler* function
+pub struct Runtime {
     client: Client,
     config: RefConfig,
 }
@@ -203,6 +210,9 @@ impl Runtime {
         }
         Ok(())
     }
+
+
+
 }
 
 fn incoming(client: &Client) -> impl Stream<Item = Result<http::Response<Incoming>, Error>> + Send + '_ {
